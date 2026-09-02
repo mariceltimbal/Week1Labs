@@ -72,6 +72,17 @@ useEffect(() => {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.quote}>💬 {quote}</Text>
+      <Button
+        title="New Quote"
+        onPress={() => {
+          fetch('https://api.quotable.io/random')
+            .then((response) => response.json())
+            .then((data) => setQuote(data.content));
+        }}
+      />
+
+
       <Text style={styles.heading}>Add a Task</Text>
       <TextInput
         style={styles.input}
@@ -118,5 +129,6 @@ const styles = StyleSheet.create({
   empty: { textAlign: 'center', color: '#6B7280', marginTop: 24 },
   separator: { height: 8 },
   error: { color: '#B23A48', marginBottom: 10 },
+  quote: { fontStyle: 'italic', color: '#6B7280', marginBottom: 16, textAlign: 'center' },
   celebration: { fontSize: 16, fontWeight: 'bold', color: '#1E8A7A', textAlign: 'center', marginVertical: 12 },
 });
