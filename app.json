@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Week1Labs",
-    "slug": "Week1Labs",
+    "name": "Week2Labs",
+    "slug": "Week2Labs",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#1B2A4A"
     },
     "ios": {
       "supportsTablet": true

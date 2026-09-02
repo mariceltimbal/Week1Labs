@@ -70,6 +70,11 @@ useEffect(() => {
   );
 }
 
+function handleDeleteTask(id) {
+  setTasks(tasks.filter((t) => t.id !== id));
+}
+
+
   return (
     <View style={styles.container}>
       <Text style={styles.quote}>💬 {quote}</Text>
@@ -108,8 +113,10 @@ useEffect(() => {
             title={item.title}
             done={item.done}
             onToggle={() => handleToggleTask(item.id)}
+            onDelete={() => handleDeleteTask(item.id)}
           />
         )}
+        
         ListEmptyComponent={
           <Text style={styles.empty}>No tasks yet — add one above! 👆</Text>
         }
