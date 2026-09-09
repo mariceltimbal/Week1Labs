@@ -56,6 +56,7 @@ export default function AddTaskScreen() {
     }
 
     try {
+      console.log('Adding task:', taskText);
       await addDoc(collection(db, 'tasks'), {
         title: taskText,
         done: false,
