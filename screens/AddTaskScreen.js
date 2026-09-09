@@ -1,12 +1,6 @@
 import { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  Button,
-  FlatList,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, TextInput, Button, FlatList, StyleSheet } from 'react-native';
+import { signOut } from 'firebase/auth';
 import { auth, db } from '../firebaseConfig';
 import {
   collection,
@@ -25,13 +19,13 @@ export default function AddTaskScreen() {
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    // 1. Guard check: Do not execute query if user is not yet loaded
-    const user = auth.currentUser;
-    if (!user) return;
+    // Guard against null auth user during startup or hot reload
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
 
     const tasksQuery = query(
       collection(db, 'tasks'),
-      where('ownerId', '==', user.uid)
+      where('ownerId', '==', currentUser.uid)
     );
 
     const unsubscribe = onSnapshot(
@@ -43,9 +37,7 @@ export default function AddTaskScreen() {
         }));
         setTasks(loadedTasks);
       },
-      (error) => {
-        console.error('Firestore listener error:', error.message);
-      }
+      (err) => setErrorMessage(err.message)
     );
 
     return () => unsubscribe();
@@ -57,10 +49,9 @@ export default function AddTaskScreen() {
       return;
     }
 
-    // 2. Guard check before saving to Firestore
-    const user = auth.currentUser;
-    if (!user) {
-      setErrorMessage('User session not found. Please log in again.');
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      setErrorMessage('User session not active.');
       return;
     }
 
@@ -68,33 +59,38 @@ export default function AddTaskScreen() {
       await addDoc(collection(db, 'tasks'), {
         title: taskText,
         done: false,
-        ownerId: user.uid,
+        ownerId: currentUser.uid,
       });
       setTaskText('');
       setErrorMessage('');
-    } catch (error) {
-      setErrorMessage(error.message);
+    } catch (err) {
+      setErrorMessage(err.message);
     }
   }
 
   async function handleToggleTask(id, currentDone) {
     try {
       await updateDoc(doc(db, 'tasks', id), { done: !currentDone });
-    } catch (error) {
-      console.error('Error toggling task:', error.message);
+    } catch (err) {
+      setErrorMessage(err.message);
     }
   }
 
   async function handleDeleteTask(id) {
     try {
       await deleteDoc(doc(db, 'tasks', id));
-    } catch (error) {
-      console.error('Error deleting task:', error.message);
+    } catch (err) {
+      setErrorMessage(err.message);
     }
   }
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.userText}>User: {auth.currentUser?.email}</Text>
+        <Button title="Log Out" color="#B23A48" onPress={() => signOut(auth)} />
+      </View>
+
       <TextInput
         style={styles.input}
         placeholder="Enter a task"
@@ -110,10 +106,7 @@ export default function AddTaskScreen() {
         renderItem={({ item }) => (
           <View style={styles.taskCard}>
             <Text
-              style={[
-                styles.taskText,
-                item.done && styles.taskDone,
-              ]}
+              style={[styles.taskText, item.done && styles.taskDone]}
               onPress={() => handleToggleTask(item.id, item.done)}
             >
               {item.title}
@@ -128,8 +121,10 @@ export default function AddTaskScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
+  userText: { fontSize: 12, color: '#555' },
   input: { borderWidth: 1, borderColor: '#ccc', padding: 10, marginBottom: 10, borderRadius: 5 },
-  error: { color: 'red', marginBottom: 10 },
+  error: { color: '#B23A48', marginBottom: 10 },
   taskCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 10, marginVertical: 5, borderWidth: 1, borderColor: '#eee' },
   taskText: { fontSize: 16 },
   taskDone: { textDecorationLine: 'line-through', color: '#888' },

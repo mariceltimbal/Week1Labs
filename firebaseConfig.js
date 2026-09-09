@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { initializeFirestore } from 'firebase/firestore';
 import {
   initializeAuth,
   getReactNativePersistence,
@@ -20,7 +20,9 @@ const firebaseConfig = {
 // Check if an app instance already exists to prevent Fast Refresh crashes
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-export const db = getFirestore(app);
+export const db = initializeFirestore(app, {
+  experimentalAutoDetectLongPolling: true,
+});
 
 // Guard initializeAuth against duplicate calls during hot reload
 let auth;
